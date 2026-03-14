@@ -224,3 +224,50 @@ body {
   resize: vertical;
   min-height: 80px;
 }
+
+/* ─── Mobile Responsive ─────────────────────────────────────────────────────── */
+
+.nav-links-desktop {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.hamburger {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .nav-links-desktop {
+    display: none !important;
+  }
+
+  .hamburger {
+    display: flex !important;
+  }
+
+  .section {
+    padding: 0 16px 32px;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+  }
+
+  .card {
+    flex: 0 0 130px;
+  }
+
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .modal {
+    border-radius: 16px 16px 0 0;
+    padding: 24px 20px;
+    max-width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
