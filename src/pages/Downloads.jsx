@@ -3,10 +3,11 @@ import { useState, useEffect } from 'react';
 const POSTER_BASE = 'https://image.tmdb.org/t/p/w92';
 
 const statusConfig = {
-  downloading: { label: 'Downloading', color: '#f5a623' },
-  queued:      { label: 'Queued',       color: '#6b7280' },
-  completed:   { label: 'Available',    color: '#27ae60' },
-  failed:      { label: 'Failed',       color: '#dc2626' },
+  downloading:  { label: 'Downloading',  color: '#f5a623' },
+  transferring: { label: 'Transferring', color: '#a78bfa' },
+  queued:       { label: 'Queued',       color: '#6b7280' },
+  completed:    { label: 'Available',    color: '#27ae60' },
+  failed:       { label: 'Failed',       color: '#dc2626' },
 };
 
 export default function Downloads() {
@@ -28,7 +29,7 @@ export default function Downloads() {
 
   useEffect(() => {
     fetchDownloads();
-    const interval = setInterval(fetchDownloads, 4000); // Poll every 4s
+    const interval = setInterval(fetchDownloads, 4000);
     return () => clearInterval(interval);
   }, []);
 
@@ -37,10 +38,11 @@ export default function Downloads() {
     setDownloads(prev => prev.filter(d => d.id !== id));
   };
 
-  const active    = downloads.filter(d => d.status === 'downloading');
-  const queued    = downloads.filter(d => d.status === 'queued');
-  const completed = downloads.filter(d => d.status === 'completed');
-  const failed    = downloads.filter(d => d.status === 'failed');
+  const active       = downloads.filter(d => d.status === 'downloading');
+  const transferring = downloads.filter(d => d.status === 'transferring');
+  const queued       = downloads.filter(d => d.status === 'queued');
+  const completed    = downloads.filter(d => d.status === 'completed');
+  const failed       = downloads.filter(d => d.status === 'failed');
 
   if (loading) {
     return (
@@ -54,7 +56,7 @@ export default function Downloads() {
     <div style={{ padding: '90px 40px 60px', maxWidth: '1100px', margin: '0 auto' }}>
       <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>Downloads</h1>
       <p style={{ color: '#b3b3b3', marginBottom: '40px' }}>
-        {active.length} downloading · {queued.length} queued · {completed.length} completed
+        {active.length} downloading · {transferring.length} transferring · {queued.length} queued · {completed.length} completed
       </p>
 
       {downloads.length === 0 && (
@@ -70,6 +72,9 @@ export default function Downloads() {
 
       {active.length > 0 && (
         <Section title="Downloading" items={active} onRemove={handleRemove} />
+      )}
+      {transferring.length > 0 && (
+        <Section title="Transferring from Seedbox" items={transferring} onRemove={handleRemove} />
       )}
       {queued.length > 0 && (
         <Section title="Queue" items={queued} onRemove={handleRemove} />
@@ -138,14 +143,16 @@ function DownloadCard({ dl, onRemove }) {
         </div>
 
         {/* Progress bar */}
-        {(dl.status === 'downloading' || dl.status === 'queued') && (
+        {(dl.status === 'downloading' || dl.status === 'transferring' || dl.status === 'queued') && (
           <div style={{ marginBottom: '4px' }}>
             <div style={{
               height: '4px', background: '#2a2a2a', borderRadius: '2px', overflow: 'hidden'
             }}>
               <div style={{
                 height: '100%', width: `${dl.progress}%`,
-                background: dl.status === 'downloading' ? '#f5a623' : '#4b5563',
+                background: dl.status === 'downloading' ? '#f5a623'
+                          : dl.status === 'transferring' ? '#a78bfa'
+                          : '#4b5563',
                 transition: 'width 0.5s ease', borderRadius: '2px'
               }} />
             </div>
@@ -167,6 +174,13 @@ function DownloadCard({ dl, onRemove }) {
               <span>{dl.progress}%</span>
               {dl.speed && <span>{dl.speed}</span>}
               {dl.eta && <span>ETA {dl.eta}</span>}
+            </>
+          )}
+          {dl.status === 'transferring' && (
+            <>
+              <span>{dl.progress}%</span>
+              {dl.speed && <span>{dl.speed}</span>}
+              <span style={{ color: '#a78bfa' }}>↓ Seedbox transfer</span>
             </>
           )}
           {dl.status === 'queued' && <span>Waiting in queue</span>}

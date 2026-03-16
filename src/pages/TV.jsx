@@ -88,7 +88,6 @@ export default function TV() {
         </div>
       </div>
 
-      {/* Full Screen Immersive Modal */}
       {selected && (
         <div style={{
           position: 'fixed',
@@ -97,7 +96,6 @@ export default function TV() {
           overflow: 'hidden',
           background: '#000',
         }}>
-          {/* Backdrop Image */}
           {(backdrop || selected.backdrop_path) && (
             <img
               src={`${BACKDROP_BASE}${backdrop || selected.backdrop_path}`}
@@ -113,7 +111,6 @@ export default function TV() {
             />
           )}
 
-          {/* Light gradient */}
           <div style={{
             position: 'absolute',
             inset: 0,
@@ -125,7 +122,6 @@ export default function TV() {
             background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 45%)',
           }} />
 
-          {/* Close Button */}
           <button
             onClick={closeModal}
             style={{
@@ -147,7 +143,6 @@ export default function TV() {
             }}
           >✕</button>
 
-          {/* Content — bottom left */}
           <div style={{
             position: 'absolute',
             bottom: 0,
@@ -158,7 +153,6 @@ export default function TV() {
             gap: '28px',
             alignItems: 'flex-end',
           }}>
-            {/* Poster */}
             {selected.poster_path && (
               <img
                 src={`${POSTER_BASE}${selected.poster_path}`}
@@ -172,7 +166,6 @@ export default function TV() {
               />
             )}
 
-            {/* Text */}
             <div style={{ maxWidth: '520px' }}>
               <div style={{
                 display: 'inline-block',
@@ -262,7 +255,7 @@ export default function TV() {
                       gap: '8px',
                     }}
                   >
-                    ▶ Watch Now
+                    + Request
                   </button>
                 )}
                 <button

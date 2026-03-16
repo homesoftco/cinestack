@@ -1,17 +1,28 @@
 import { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 export default function Navbar() {
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    setMenuOpen(false)
+    navigate('/login')
+  }
 
   const links = [
-    { path: '/', label: 'Home' },
-    { path: '/movies', label: 'Movies' },
-    { path: '/tv', label: 'TV Shows' },
-    { path: '/requests', label: 'Requests' },
-    { path: '/downloads', label: 'Downloads' },
-  ]
+  { path: '/app', label: 'Home' },
+  { path: '/app/movies', label: 'Movies' },
+  { path: '/app/tv', label: 'TV Shows' },
+  { path: '/app/requests', label: 'Requests' },
+  { path: '/app/downloads', label: 'Downloads' },
+  { path: '/app/settings', label: 'Settings' },
+  { path: '/app/profile', label: 'Profile' },
+]
 
   return (
     <>
@@ -64,19 +75,40 @@ export default function Navbar() {
 
         {/* Right Side */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '50%',
-            background: '#1d4ed8',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: '700',
-            fontSize: '0.9rem',
-            cursor: 'pointer',
-          }}>
-            C
+          {/* User avatar + logout on desktop */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+           <Link to="/app/profile" style={{ textDecoration: 'none' }}>
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                background: '#1d4ed8',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: '700',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                color: '#ffffff',
+              }}>
+                {user?.display_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'C'}
+              </div>
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="logout-btn-desktop"
+              style={{
+                background: 'none',
+                border: '1px solid #333',
+                borderRadius: '6px',
+                color: '#b3b3b3',
+                padding: '6px 12px',
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+              }}
+            >
+              Sign Out
+            </button>
           </div>
 
           <button
@@ -145,6 +177,21 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
+          <button
+            onClick={handleLogout}
+            style={{
+              background: 'none',
+              border: '1px solid #444',
+              borderRadius: '8px',
+              color: '#b3b3b3',
+              padding: '12px 32px',
+              fontSize: '1.2rem',
+              cursor: 'pointer',
+              marginTop: '16px',
+            }}
+          >
+            Sign Out
+          </button>
         </div>
       )}
     </>
