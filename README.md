@@ -2,9 +2,9 @@
 
 > One interface. Every piece of your media stack. Zero compromise.
 
-CineStack replaces Sonarr, Radarr, Prowlarr, Jellyseerr, and Jellyfin with a single, unified application built for people who refuse to accept that self-hosted media has to feel like a homelab project.
+CineStack replaces Sonarr, Radarr, Prowlarr, Jellyseerr, and Jellyfin with a single unified application built for people who refuse to accept that self-hosted media has to feel like a homelab project.
 
-**Browse → Request → Download → Watch.** That's it.
+**Browse → Request → Download → Watch. That's it.**
 
 ---
 
@@ -14,51 +14,88 @@ The self-hosted media community solved the hard problems years ago. Transcoding,
 
 Five separate apps. Five logins. Five ports. Five configuration systems. Five points of failure.
 
-CineStack is the answer to a simple question: *why does your personal media server feel like infrastructure and not a streaming service?*
+CineStack is the answer to a simple question: why does your personal media server feel like infrastructure and not a streaming service?
 
 ---
 
-## What It Does
+## Live Demo
+
+Try it now at **[cinestack.app](https://cinestack.app)**
+
+The demo runs the real app with placeholder data — no login required.
+
+---
+
+## What's Built
 
 | Feature | Status |
 |---|---|
-| Netflix-quality browsing UI | ✅ Live |
+| Clean, modern browsing UI | ✅ Live |
 | TMDB-powered discovery (movies + TV) | ✅ Live |
 | Jellyseerr-style request system | ✅ Live |
-| PostgreSQL-backed request tracking | ✅ Live |
 | Real-time download queue with progress | ✅ Live |
 | Sonarr integration (TV automation) | ✅ Live |
 | Radarr integration (movie automation) | ✅ Live |
 | Prowlarr integration (indexer management) | ✅ Live |
-| User authentication (JWT) | 🔨 In Progress |
-| Jellyfin integration (playback) | 🔨 In Progress |
-| Single Docker Compose deployment | ⏭️ Planned |
-| Mobile iOS/Android apps | ⏭️ Planned |
+| Jellyfin integration (Watch Now) | ✅ Live |
+| JWT authentication + user profiles | ✅ Live |
+| DB-backed settings (all integrations) | ✅ Live |
+| Light/dark theme toggle | ✅ Live |
+| **Seedbox SFTP auto-transfer** | ✅ Live |
+| Single Docker Compose deployment | ✅ Live |
+| Waitlist landing page | ✅ Live |
+| Real Radarr/Sonarr queue polling | ⏭️ Phase 3 |
+| Multiple user accounts | ⏭️ Phase 3 |
+| Native mobile app (iOS + Android) | ⏭️ Phase 3 |
+| Push notifications | ⏭️ Phase 3 |
+| Parental controls + PIN profiles | ⏭️ Phase 3 |
+
+---
+
+## Pricing
+
+CineStack is free and open source for solo self-hosters. Pro features are unlocked via a license key — no subscription required.
+
+| Tier | Price | For |
+|---|---|---|
+| **Free** | $0 forever | Solo self-hosters |
+| **Annual** | $49/year | Anyone sharing with family or friends |
+| **Lifetime** | $149 one-time | Everything in Annual + early access + direct support + GitHub sponsors credit |
+
+License keys are delivered instantly via [Lemon Squeezy](https://lemonsqueezy.com). No servers to run — you self-host, we sell software.
+
+**The pitch:** *Free for yourself. Pro for everyone you share it with.*
 
 ---
 
 ## Tech Stack
 
-**Frontend**
+### Frontend
 - React + Vite
+- react-router-dom
 - TMDB API for metadata
-- Custom dark cinematic UI
+- Custom dark cinematic UI (Outfit font, `#1d4ed8` accent)
 
-**Backend**
+### Backend
 - Node.js + Express
-- PostgreSQL
+- PostgreSQL 16
+- JWT authentication (bcryptjs + jsonwebtoken)
 - PM2 process management
+- `ssh2-sftp-client` for seedbox SFTP transfers
 
-**Infrastructure**
+### Infrastructure
 - Nginx reverse proxy
-- Cloudflare DNS + SSL
+- Cloudflare DNS + SSL (Flexible)
 - Docker + Docker Compose
-- Deployed on Hetzner Cloud (Nuremberg, DE)
+- Deployed on Hetzner Cloud (CPX42 — 8 vCPU, 16GB RAM)
 
-**Integrations**
+### Integrations
 - Sonarr API v3
 - Radarr API v3
 - Prowlarr API v1
+- Jellyfin API
+- Listmonk (waitlist email)
+- Lemon Squeezy (payments + license keys — Phase 4)
 
 ---
 
@@ -75,9 +112,11 @@ Nginx (reverse proxy)
      │
      ├──▶ /api/* ──▶ Express API (PM2) ──▶ PostgreSQL
      │                    │
-     │                    ├──▶ Sonarr (TV automation)
-     │                    ├──▶ Radarr (Movie automation)
-     │                    └──▶ Prowlarr (Indexer management)
+     │                    ├──▶ Sonarr  (TV automation)
+     │                    ├──▶ Radarr  (movie automation)
+     │                    ├──▶ Prowlarr (indexer management)
+     │                    ├──▶ Jellyfin (playback / Watch Now)
+     │                    └──▶ Seedbox  (SFTP auto-transfer)
      │
      └──▶ /* ──▶ React + Vite (dist)
 ```
@@ -87,6 +126,7 @@ Nginx (reverse proxy)
 ## Getting Started (Self-Hosted)
 
 ### Prerequisites
+
 - Ubuntu 22.04 / 24.04
 - Node.js 20+
 - PostgreSQL 16
@@ -104,12 +144,12 @@ git clone https://github.com/csaul253-blip/cinestack-api.git
 ### 2. Configure environment
 
 **Frontend** (`cinestack/.env`):
-```env
+```
 VITE_TMDB_TOKEN=your_tmdb_read_access_token
 ```
 
 **API** (`cinestack-api/.env`):
-```env
+```
 PORT=3004
 DB_HOST=localhost
 DB_PORT=5432
@@ -122,15 +162,18 @@ SONARR_URL=http://localhost:8990
 SONARR_API_KEY=your_sonarr_api_key
 PROWLARR_URL=http://localhost:9696
 PROWLARR_API_KEY=your_prowlarr_api_key
+JWT_SECRET=your_strong_random_secret
+JELLYFIN_URL=https://your-jellyfin-url
+JELLYFIN_API_KEY=your_jellyfin_api_key
 ```
+
+> ⚠️ Generate a strong JWT_SECRET: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`
+> **Do not change JWT_SECRET after first run** — seedbox passwords are encrypted using a key derived from it.
 
 ### 3. Set up the database
 
 ```bash
 sudo -u postgres psql
-```
-
-```sql
 CREATE DATABASE cinestack;
 CREATE USER cinestack WITH PASSWORD 'your_password';
 GRANT ALL PRIVILEGES ON DATABASE cinestack TO cinestack;
@@ -138,12 +181,18 @@ ALTER DATABASE cinestack OWNER TO cinestack;
 \q
 ```
 
-```bash
-sudo -u postgres psql -d cinestack
-```
-
 ```sql
-CREATE TABLE requests (
+-- Run in the cinestack database
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role VARCHAR(50) DEFAULT 'user',
+  display_name VARCHAR(255),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS requests (
   id SERIAL PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
   type VARCHAR(50) NOT NULL,
@@ -154,7 +203,7 @@ CREATE TABLE requests (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE downloads (
+CREATE TABLE IF NOT EXISTS downloads (
   id SERIAL PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
   type VARCHAR(50) NOT NULL,
@@ -169,11 +218,22 @@ CREATE TABLE downloads (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
-GRANT ALL PRIVILEGES ON TABLE requests TO cinestack;
-GRANT ALL PRIVILEGES ON TABLE downloads TO cinestack;
-GRANT USAGE, SELECT ON SEQUENCE requests_id_seq TO cinestack;
-GRANT USAGE, SELECT ON SEQUENCE downloads_id_seq TO cinestack;
-\q
+CREATE TABLE IF NOT EXISTS waitlist (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  name VARCHAR(255),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS settings (
+  id SERIAL PRIMARY KEY,
+  key VARCHAR(255) UNIQUE NOT NULL,
+  value TEXT,
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO cinestack;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO cinestack;
 ```
 
 ### 4. Start the media stack
@@ -185,13 +245,13 @@ cd cinestack-media && docker compose up -d
 ### 5. Build and start
 
 ```bash
-# Frontend
-cd cinestack && npm install && npm run build
-
 # API
 cd cinestack-api && npm install
 pm2 start index.js --name cinestack-api
 pm2 save && pm2 startup
+
+# Frontend
+cd cinestack && npm install && npm run build
 ```
 
 ### 6. Configure Nginx
@@ -226,37 +286,37 @@ curl https://your-domain.com/api/health
 
 ---
 
+## Seedbox SFTP Auto-Transfer (Pro)
+
+CineStack Pro automates the most painful step in the seedbox workflow — transferring completed files from your remote seedbox to your local media folder.
+
+**Before CineStack:** Radarr/Sonarr → seedbox downloads → you manually SFTP files home → Jellyfin picks up.
+
+**With CineStack Pro:** Radarr/Sonarr → seedbox downloads → CineStack auto-transfers → Jellyfin library scan fires → Watch Now lights up. You do nothing.
+
+Configure it in Settings → Integrations → Seedbox SFTP Auto-Transfer. Password is encrypted at rest with AES-256-GCM.
+
+---
+
 ## Roadmap
 
-**Phase 1 — Foundation** ✅ Complete
-- Unified UI, TMDB integration, request system, download queue, Sonarr/Radarr/Prowlarr integration
+### Phase 1 — Foundation ✅ Complete
+Unified UI, TMDB integration, request system, download queue, Sonarr/Radarr/Prowlarr integration.
 
-**Phase 2 — Backend** 🔨 In Progress
-- User authentication (JWT), Jellyfin integration, WebSocket download progress, single Docker Compose deployment
+### Phase 2 — Backend ✅ Complete
+JWT auth, Jellyfin integration, DB-backed settings, profile page, light/dark theme, seedbox SFTP auto-transfer, Dockerfiles, unified Docker Compose.
 
-**Phase 3 — Polish**
-- Mobile responsive design, user profiles with PIN protection, parental controls, notification system
+### Phase 3 — Polish + Pro Groundwork
+Real Radarr/Sonarr queue polling, multiple user accounts, license key system, native mobile app (Capacitor), push notifications, parental controls, PIN profiles, admin dashboard, onboarding wizard.
 
-**Phase 4 — Monetization**
-- CineStack Connect ($4.99/mo — managed indexer network)
-- CineStack Cloud ($12.99/mo — fully hosted)
-
----
-
-## Business Model
-
-CineStack is and will always be **free and open source** for self-hosters.
-
-Revenue comes from selling time and convenience — not features.
-
-- **CineStack Connect** — managed indexer network that always works
-- **CineStack Cloud** — fully hosted for people who want the result without the setup
+### Phase 4 — Monetization
+Wyoming LLC, Lemon Squeezy (Annual $49/yr + Lifetime $149), DMCA agent registration, ProductHunt launch.
 
 ---
 
-## Contributing
+## Legal
 
-CineStack is in active development. Issues and PRs welcome.
+CineStack is software only. It does not host, store, stream, or distribute any media content. Users bring their own download clients, storage, and media. What users do with the software is their own responsibility — the same legal position as Sonarr, Radarr, Plex, and Jellyfin.
 
 ---
 
@@ -266,4 +326,4 @@ MIT
 
 ---
 
-*Built by [@csaul253-blip](https://github.com/csaul253-blip)*
+Built by [@csaul253-blip](https://github.com/csaul253-blip)
