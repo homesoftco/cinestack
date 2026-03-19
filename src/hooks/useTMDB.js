@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
-const BASE_URL = 'https://api.themoviedb.org/3'
+const BASE_URL = '/api/tmdb'
 const IMG_BASE = 'https://image.tmdb.org/t/p'
 
 export const getPosterUrl = (path, size = 'w342') =>
@@ -11,7 +11,6 @@ export const getBackdropUrl = (path, size = 'w1280') =>
   path ? `${IMG_BASE}/${size}${path}` : null
 
 const headers = {
-  Authorization: `Bearer ${import.meta.env.VITE_TMDB_TOKEN}`,
   'Content-Type': 'application/json',
 }
 

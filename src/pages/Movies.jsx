@@ -3,11 +3,9 @@ import { useTMDB, getPosterUrl } from '../hooks/useTMDB'
 
 const BACKDROP_BASE = 'https://image.tmdb.org/t/p/original'
 const POSTER_BASE = 'https://image.tmdb.org/t/p/w342'
-const TMDB_TOKEN = import.meta.env.VITE_TMDB_TOKEN
 
 async function fetchBackdrop(movieId) {
-  const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}/images`, {
-    headers: { Authorization: `Bearer ${TMDB_TOKEN}` }
+  const res = await fetch(`/api/tmdb/movie/${movieId}/images`, {
   })
   const data = await res.json()
   const backdrops = data.backdrops || []

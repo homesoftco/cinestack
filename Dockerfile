@@ -1,7 +1,5 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
-ARG VITE_TMDB_TOKEN
-ENV VITE_TMDB_TOKEN=$VITE_TMDB_TOKEN
 COPY package*.json ./
 RUN npm ci
 COPY . .
